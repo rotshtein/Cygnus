@@ -1,0 +1,104 @@
+syntax = "proto3";
+package cygnus_proto;
+
+/*************/
+/* Version 1 */
+/************/
+
+enum STATUS
+{
+	RUN = 0;
+	STOP = 1;
+	ERROR = 2;
+	WARNING = 3;
+}
+
+enum CHANEL_STATUS
+{
+	UNKNOWN = 0;
+	OUT_OF_SYNC = 1;
+	SYNC = 2;
+}
+
+
+enum OPCODE
+{
+	HEADER = 0;
+	ACK = 1;
+	NACK = 2;
+	START_CMD = 3;
+	STOP_CMD = 4;
+	STATUS_REQUEST = 5;
+	STATUS_REPLAY = 6;
+	STATUS_MESSAGE = 7;
+}
+
+
+/*****************************************************************************************************************************/
+//
+message Header
+{
+	int32 sequence = 1;
+	OPCODE opcode = 2;			// Opcode
+	bytes message_data = 3;
+}
+
+
+/*****************************************************************************************************************************/
+// This command should be sent to start processing bitstream
+message StartCommand
+{
+	string 	input1_url = 1;			// The iutput url. The format should be udp://<host ip>:port or for the swFE file://<full path with filename and extention>
+	string 	input2_url = 2;			// see input1_url
+	int32  	E1Port1= 3;			    // The Orion box physical port number 1 to 32
+	int32	E1Port2 = 4;			// see E1Port1
+	string  BoxUrl = 5;              // The output url. The format should be udp://<host ip>:port where port == the Orion port
+}
+
+/*****************************************************************************************************************************/
+// This command stops the mediation
+message StopCommand
+{
+}
+
+/*****************************************************************************************************************************/
+// This replay us sent as responce to START_CMD or STOP_CMD
+message Ack
+{
+}
+
+/*****************************************************************************************************************************/
+// This replay us sent as responce to START_CMD or STOP_CMD
+message Nack
+{
+}
+
+/*****************************************************************************************************************************/
+// This should be sent in order to get StatusReplay
+message StatusRequest
+{
+}
+
+/*****************************************************************************************************************************/
+// This replay is sent as response to StatusRequest, ss event for new warning/error or when ever the status changes, new warning 
+message StatusReplay
+{
+	STATUS status = 1;
+	int64 Stream1InputBytes = 2;
+	int64 Stream2InputBytes = 3;
+	int64 OutputBytes = 4;
+	string status_description = 5;
+	bool warning = 6;
+	string warning_message = 7;
+	int32 warning_number = 8;
+	bool error = 9;
+	string error_mMessage = 10;
+	int32 error_number = 11;
+}
+
+/*****************************************************************************************************************************/
+// This message is sent to display status text message
+message StatusMessage
+{
+	string message = 1;
+}
