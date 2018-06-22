@@ -23,6 +23,7 @@ public class InputServer extends Thread
 	GuiInterface gui = null;
 	long	rxByteCount		= 0;
 	long	rxFrameCount	= 0;
+	SAToP 	Satop;
 
 	public InputServer(URI url, ConcurrentLinkedQueue<Byte> Queue, GuiInterface Gui) throws SocketException, UnknownHostException
 	{
@@ -43,7 +44,7 @@ public class InputServer extends Thread
 
 		socket.bind(new InetSocketAddress("0.0.0.0", sourceUrl.getPort()));
 		socket.setSoTimeout(500);
-
+		Satop = new SAToP();
 		queue = Queue;
 		
 		gui = Gui;
@@ -98,12 +99,14 @@ public class InputServer extends Thread
 				rxFrameCount++;
 				try
 				{
-					rxByteCount += packet.getLength();
+					
 					byte[] data = packet.getData();
-					for (byte b : data)
+					byte[] SATopData = Satop.GetData(data);
+					for (byte b : SATopData)
 					{
 						queue.add(b);
 					}
+					rxByteCount += SATopData.length;
 				}
 				catch (IllegalStateException e)
 				{

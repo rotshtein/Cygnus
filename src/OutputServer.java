@@ -16,7 +16,7 @@ public class OutputServer extends Thread
 
 	static final Logger					logger			= Logger.getLogger("OutputServer");
 	DatagramSocket						serverSocket	= null;
-	HashMap<Integer, DatagramSocket>	sockets			= new HashMap<Integer, DatagramSocket>();
+	HashMap<Integer, EndPort>			EndPorts		= new HashMap<Integer, EndPort>();
 	final int							PACKETSIZE		= 1500;
 	ConcurrentLinkedQueue<Byte>[]		queues			= null;
 	Boolean								stopThread		= false;
@@ -46,16 +46,14 @@ public class OutputServer extends Thread
 
 	public void AddPort(int E1Port) throws IOException
 	{
-		if (sockets.get(E1Port) != null)
+		if (EndPorts.get(E1Port) != null)
 		{
 
 		}
-		{
-			InetAddress orionInet = InetAddress.getByName( orionAddress.getHost());
-			DatagramSocket socket = new DatagramSocket(E1Port, orionInet);
-			socket.setSoTimeout(500);
-			sockets.put(E1Port, socket);
-		}
+		
+		EndPort ep = new EndPort(E1Port, orionAddress);
+		EndPorts.put(E1Port, ep);
+		
 		logger.info("UDP Server started listtning on port " + E1Port);
 	}
 
@@ -71,12 +69,12 @@ public class OutputServer extends Thread
 			logger.error("Failed to close a thread", e);
 		}
 
-		for (int Port : sockets.keySet())
+		for (int Port : EndPorts.keySet())
 		{
 			Stop(Port);
 		}
 
-		sockets.clear();
+		EndPorts.clear();
 
 		if (serverSocket != null)
 		{
@@ -97,12 +95,13 @@ public class OutputServer extends Thread
 				queue = null;
 			}
 		}
+		
+		EndPort ep = EndPorts.get(E1Port);
 
-		DatagramSocket socket = sockets.get(E1Port);
-		if (socket != null)
+		if (ep.socket != null)
 		{
-			socket.close();
-			socket = null;
+			ep.socket.close();
+			ep.socket = null;
 		}
 	}
 
@@ -139,12 +138,14 @@ public class OutputServer extends Thread
 				try
 				{
 					byte[] data = GetBytes(packet.getPort(), packet.getLength());
-					DatagramPacket SendPacket = new DatagramPacket(data, data.length, serverAddress,
-							orionAddress.getPort());
-					DatagramSocket dsocket = sockets.get(packet.getPort());
-					if (dsocket != null)
+					
+					
+					EndPort ep = EndPorts.get(packet.getPort());
+					if ((ep != null) & (ep.socket != null))
 					{
-						dsocket.send(SendPacket);
+						byte [] SAToPPacket = ep.Satop.GetBuffer(data);
+						DatagramPacket SendPacket = new DatagramPacket(SAToPPacket, SAToPPacket.length, serverAddress, orionAddress.getPort());
+						ep.socket.send(SendPacket);
 					}
 				}
 				catch (IllegalStateException e)
