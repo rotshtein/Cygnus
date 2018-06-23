@@ -1,7 +1,7 @@
 public interface GuiInterface
 {
 
-	public enum Channel
+	public static enum Channel
 	{
 		INPUT1, INPUT2, OUTPUT
 	}
@@ -14,7 +14,7 @@ public interface GuiInterface
 
 	void OperationStarted();
 	
-	void UpdateStatistics(Channel channel, long bytes);
+	void UpdateStatistics(long rx1Bytes, long rx2Bytes, long txBytes);
 
 	// void OperationInSync(Channel ch);
 

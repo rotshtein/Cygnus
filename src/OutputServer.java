@@ -6,6 +6,7 @@ import java.net.SocketException;
 import java.net.SocketTimeoutException;
 import java.net.URI;
 import java.net.UnknownHostException;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.concurrent.ConcurrentLinkedQueue;
 
@@ -15,16 +16,17 @@ public class OutputServer extends Thread
 {
 
 	static final Logger					logger			= Logger.getLogger("OutputServer");
+	static int							PACKETSIZE		= 1500;
 	DatagramSocket						serverSocket	= null;
 	HashMap<Integer, EndPort>			EndPorts		= new HashMap<Integer, EndPort>();
-	final int							PACKETSIZE		= 1500;
 	HashMap <Integer, ConcurrentLinkedQueue<Byte>>		queues			= null;
+	ArrayList<Integer>					Ports = null;					
 	Boolean								stopThread		= false;
 	URI									orionAddress	= null;
 	InetAddress							serverAddress	= null;
 	GuiInterface gui = null;
-	long	rxByteCount		= 0;
-	long	rxFrameCount	= 0;
+	long	txByteCount		= 0;
+	long	txFrameCount	= 0;
 
 	public OutputServer(URI OrionAddress, HashMap <Integer, ConcurrentLinkedQueue<Byte>> Queues, GuiInterface Gui)
 			throws SocketException, UnknownHostException
@@ -41,6 +43,7 @@ public class OutputServer extends Thread
 		{
 			queues = Queues;
 		}
+		Ports = new ArrayList<Integer>();
 		gui = Gui;
 	}
 
@@ -53,7 +56,7 @@ public class OutputServer extends Thread
 		
 		EndPort ep = new EndPort(E1Port, orionAddress);
 		EndPorts.put(E1Port, ep);
-		
+		Ports.add(E1Port);
 		logger.info("UDP Server started listtning on port " + E1Port);
 	}
 
@@ -82,6 +85,8 @@ public class OutputServer extends Thread
 			serverSocket = null;
 		}
 		queues = null;
+		Ports.clear();
+		Ports = null;
 	}
 
 	public void Stop(int E1Port)
@@ -144,9 +149,11 @@ public class OutputServer extends Thread
 					EndPort ep = EndPorts.get(packet.getPort());
 					if ((ep != null) & (ep.socket != null))
 					{
+						txFrameCount++;
 						byte [] SAToPPacket = ep.Satop.GetBuffer(data);
 						DatagramPacket SendPacket = new DatagramPacket(SAToPPacket, SAToPPacket.length, serverAddress, orionAddress.getPort());
 						ep.socket.send(SendPacket);
+						txByteCount += SAToPPacket.length;
 					}
 				}
 				catch (IllegalStateException e)
@@ -158,6 +165,15 @@ public class OutputServer extends Thread
 				{
 					logger.error("Error during store packet in queue", e);
 				}
+				try
+				{
+					gui.UpdateStatistics(0, 0, txByteCount);
+				}
+				catch (Exception e)
+				{
+					logger.error("Can't collect receive statistics",e );
+					gui.UpdateStatistics(0,0,txByteCount);
+				}
 			}
 			catch (Exception e)
 			{
@@ -167,14 +183,14 @@ public class OutputServer extends Thread
 		logger.debug("UdpServer thread exit");
 	}
 
-	public long getRxByteCount()
+	public long getTxByteCount()
 	{
-		return rxByteCount;
+		return txByteCount;
 	}
 
-	public long getRxFrameCount()
+	public long getTxFrameCount()
 	{
-		return rxFrameCount;
+		return txFrameCount;
 	}
 
 	private byte[] GetBytes(int Port, int Length)

@@ -117,15 +117,18 @@ public class ManagementParser extends Thread implements GuiInterface
 
 				try
 				{
+					SendStatusMessage("Starting ...", conn);
+					logger.info("Starting...");
 					URI Url1 = new URI(p.getInput1Url());
 					URI Url2 = new URI(p.getInput2Url());
 					URI OraionUrl = new URI(p.getBoxUrl());
 					Port1 = p.getE1Port1();
 					Port2 = p.getE1Port2();
 					StartForward(Port1, Port2, Url1, Url2, OraionUrl);
+					SendStatusMessage("Forward process started");
+					logger.info("Forward process started");
 
-					SendStatusMessage("Starting ...", conn);
-					logger.info("Starting...");
+					
 					SendAck(h, conn);
 					SendProcessStartMessage();
 				}
@@ -144,6 +147,7 @@ public class ManagementParser extends Thread implements GuiInterface
 				SendAck(h, conn);
 				StopForward();
 				SendProcessStopMessage();
+				SendStatusMessage("Stop sending date to Orion");
 				break;
 
 			case STATUS_REQUEST:
@@ -178,7 +182,6 @@ public class ManagementParser extends Thread implements GuiInterface
 		currentConn = null;
 	}
 
-	@SuppressWarnings("unchecked")
 	private Boolean StartForward(int E1Port1, int E1Port2, URI Url1, URI Url2, URI BoxUrl)
 			throws URISyntaxException, IOException
 	{
@@ -218,6 +221,7 @@ public class ManagementParser extends Thread implements GuiInterface
 			s = null;
 		}
 		inputServers.clear();
+		inputServers = null;
 		
 		outputServer.Stop();
 		outputServer = null;
@@ -292,6 +296,17 @@ public class ManagementParser extends Thread implements GuiInterface
 		}
 	}
 
+	private void SendStatusMessage(String message)
+	{
+		for (WebSocket conn : server.connections())
+		{
+			if (conn.isOpen())
+			{
+				SendStatusMessage(message, conn);
+			}
+		}
+	}
+	
 	private void SendStatusMessage(String message, WebSocket conn)
 	{
 		try
@@ -401,25 +416,23 @@ public class ManagementParser extends Thread implements GuiInterface
 	}
 
 	@Override
-	public void UpdateStatistics(Channel channel, long bytes)
+	public void UpdateStatistics(long s, long s1, long txBytes)
 	{
-		switch (channel)
+		if (inputServers != null)
 		{
-		case INPUT1:
-			rxBytes1 += bytes;
-			break;
-			
-		case INPUT2:
-			rxBytes2 += bytes;
-			break;
-			
-		case OUTPUT:
-			txBytes += bytes;
-			break;
+			if (inputServers.get(0) != null)
+			{
+				rxBytes1 = inputServers.get(0).Satop.getRxByteCount();
+			}
+			if (inputServers.get(1) != null)
+			{
+				rxBytes2 = inputServers.get(1).Satop.getRxByteCount();
+			}
 		}
+		txBytes += txBytes;
 		
 		StatusReplay sr = StatusReplay.newBuilder().setStream1InputBytes(rxBytes1)
-				.setStream2InputBytes(rxBytes2).build(); //setOutputBytes(txBytes).
+				.setStream2InputBytes(rxBytes2).setOutputBytes(txBytes).build(); 
 		
 		Header h = Header.newBuilder().setOpcode(OPCODE.STATUS_REPLAY).setMessageData(sr.toByteString()).build();
 		

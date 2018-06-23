@@ -7,6 +7,8 @@ import javax.swing.SwingUtilities;
 
 import org.apache.log4j.Logger;
 
+import cygnus_proto.Cygnus.OPCODE;
+
 import javax.swing.BorderFactory;
 import javax.swing.InputVerifier;
 import javax.swing.JComponent;
@@ -24,6 +26,7 @@ import java.text.ParseException;
 import java.util.StringTokenizer;
 import java.awt.event.ActionEvent;
 import java.awt.Font;
+import java.awt.Toolkit;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import javax.swing.JTextArea;
@@ -291,7 +294,7 @@ public class MainScreen implements GuiInterface
 			{
 				if (client != null)
 				{
-					//client.send(0, OPCODE.STOP_CMD, null);
+					client.send(0, OPCODE.STOP_CMD, null);
 					try
 					{
 						Thread.sleep(200);
@@ -300,8 +303,6 @@ public class MainScreen implements GuiInterface
 					{
 						logger.error("Faild to stop", e1);
 					}
-					client.Stop();
-					client = null;
 				}
 				isRunning = false;
 				OperationCompleted();
@@ -316,7 +317,7 @@ public class MainScreen implements GuiInterface
 		server = new ManagementServer(new InetSocketAddress(host, port));
 		server.start();
 		serverUri = Parameters.Get("WebSocketServerUri", "ws://127.0.0.1:8887");
-		client = null;// new ManagementClient(new URI(serverUri), this);
+		client = new ManagementClient(new URI(serverUri), MainScreen.this);
 	}
 
 	class StartAction implements ActionListener
@@ -327,7 +328,10 @@ public class MainScreen implements GuiInterface
 			isRunning = true;
 			try
 			{
-				client = new ManagementClient(new URI(serverUri), MainScreen.this);
+				if (client == null)
+				{
+					client = new ManagementClient(new URI(serverUri), MainScreen.this);
+				}
 			}
 			catch (URISyntaxException e)
 			{
@@ -401,7 +405,7 @@ public class MainScreen implements GuiInterface
 	private void initialize()
 	{
 		frmCygnusVersion = new JFrame();
-		//frmCygnusVersion.setIconImage(Toolkit.getDefaultToolkit().getImage(MainScreen.class.getResource("/tcc/mediation.png")));
+		frmCygnusVersion.setIconImage(Toolkit.getDefaultToolkit().getImage(MainScreen.class.getResource("/forward.jpg")));
 		frmCygnusVersion.addWindowListener(new WindowAdapter()
 		{
 
@@ -554,7 +558,7 @@ public class MainScreen implements GuiInterface
 	}
 
 	@Override
-	public void UpdateStatistics(Channel channel, long bytes)
+	public void UpdateStatistics(long rx1Bytes, long rx2Bytes, long txBytes)
 	{
 	
 		if (!SwingUtilities.isEventDispatchThread())
@@ -565,25 +569,14 @@ public class MainScreen implements GuiInterface
 				@Override
 				public void run()
 				{
-					UpdateStatistics(channel,  bytes);
+					UpdateStatistics(rx1Bytes, rx2Bytes, txBytes);
 				}
 			});
 			return;
 		}
 		// Now edit your gui objects
-		switch (channel)
-		{
-		case INPUT1:
-			lblIn1Counter.setText(Long.toString(bytes));
-			break;
-			
-		case INPUT2:
-			lblIn2Counter.setText(Long.toString(bytes));
-			break;
-			
-		case OUTPUT:
-			labelOut.setText(Long.toString(bytes));
-			break;
-		}
+		lblIn1Counter.setText(Long.toString(rx1Bytes));
+		lblIn2Counter.setText(Long.toString(rx2Bytes));
+		labelOut.setText(Long.toString(txBytes));
 	}
 }

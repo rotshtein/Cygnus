@@ -11,11 +11,11 @@ public class SAToP
 	
 	int rxSeq;
 	int txSeq;
-	long rxByteCount;
-	long rxFrameCount;
-	long rxFrameLostCount;
-	long txByteCount;
-	long txFrameCount;
+	public long rxByteCount;
+	public long rxFrameCount;
+	public long rxFrameLostCount;
+	public long txByteCount;
+	public long txFrameCount;
 	
 	public SAToP()
 	{
@@ -120,5 +120,15 @@ public class SAToP
 		{
 			txSeq = 0;
 		}
+	}
+	
+	public long getRxByteCount()
+	{
+		return rxByteCount;
+	}
+	
+	public long getTxByteCount()
+	{
+		return txByteCount;
 	}
 }

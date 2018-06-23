@@ -121,6 +121,8 @@ public class ManagementClient extends WebSocketClient
 						gui.OperationStarted();
 						operationStarted = true;
 					}
+					
+					gui.UpdateStatistics(sr.getStream1InputBytes(), sr.getStream2InputBytes(), sr.getOutputBytes());
 				}
 
 				
