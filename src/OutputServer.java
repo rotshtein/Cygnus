@@ -18,7 +18,7 @@ public class OutputServer extends Thread
 	DatagramSocket						serverSocket	= null;
 	HashMap<Integer, EndPort>			EndPorts		= new HashMap<Integer, EndPort>();
 	final int							PACKETSIZE		= 1500;
-	ConcurrentLinkedQueue<Byte>[]		queues			= null;
+	HashMap <Integer, ConcurrentLinkedQueue<Byte>>		queues			= null;
 	Boolean								stopThread		= false;
 	URI									orionAddress	= null;
 	InetAddress							serverAddress	= null;
@@ -26,14 +26,14 @@ public class OutputServer extends Thread
 	long	rxByteCount		= 0;
 	long	rxFrameCount	= 0;
 
-	public OutputServer(URI OrionAddress, ConcurrentLinkedQueue<Byte>[] Queues, GuiInterface Gui)
+	public OutputServer(URI OrionAddress, HashMap <Integer, ConcurrentLinkedQueue<Byte>> Queues, GuiInterface Gui)
 			throws SocketException, UnknownHostException
 	{
 		orionAddress = OrionAddress;
 		if (serverSocket == null)
 		{
 			serverAddress = InetAddress.getByName(OrionAddress.getHost());
-			serverSocket = new DatagramSocket(OrionAddress.getPort(), serverAddress);
+			serverSocket = new DatagramSocket(OrionAddress.getPort());
 			serverSocket.setSoTimeout(500);
 		}
 
@@ -88,7 +88,7 @@ public class OutputServer extends Thread
 	{
 		if (queues != null)
 		{
-			ConcurrentLinkedQueue<Byte> queue = queues[E1Port];
+			ConcurrentLinkedQueue<Byte> queue = queues.get(E1Port);
 			if (queue != null)
 			{
 				queue.clear();
@@ -137,6 +137,7 @@ public class OutputServer extends Thread
 
 				try
 				{
+					packet.setPort(1);
 					byte[] data = GetBytes(packet.getPort(), packet.getLength());
 					
 					
@@ -180,9 +181,10 @@ public class OutputServer extends Thread
 	{
 		//TODO Add SAToP header
 		byte[] data = new byte[Length];
-		ConcurrentLinkedQueue<Byte> queue = queues[Port];
+		ConcurrentLinkedQueue<Byte> queue = queues.get(Port);
 		if (queue.size() >= Length)
 		{
+			
 			if (queue.size() >= 100 * Length)
 			{
 				for (int i = 0; i < Length; i++)

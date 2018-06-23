@@ -3,6 +3,7 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.AbstractMap;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.ConcurrentLinkedQueue;
@@ -28,7 +29,7 @@ public class ManagementParser extends Thread implements GuiInterface
 	BlockingQueue<AbstractMap.SimpleEntry<byte[], WebSocket>>	queue			= null;
 	WebSocket													currentConn		= null;
 	Boolean														runThread;
-	ConcurrentLinkedQueue<Byte>[]								queues			= null;
+	HashMap <Integer, ConcurrentLinkedQueue<Byte>>				queues			= null;
 	List<InputServer>											inputServers	= null;
 	OutputServer												outputServer	= null;
 	int															Port1, Port2;
@@ -184,13 +185,15 @@ public class ManagementParser extends Thread implements GuiInterface
 		// StartForward(p.getE1Port1(), p.getE1Port2() , p.getInput1Url(),
 		// p.getInput2Url(), p.getBoxUrl())
 
-		queues = (ConcurrentLinkedQueue<Byte>[]) new ConcurrentLinkedQueue[Math.max(E1Port1, E1Port2) + 1];
+		queues = new HashMap <Integer, ConcurrentLinkedQueue<Byte>>();
+		queues.put(E1Port1, new ConcurrentLinkedQueue<Byte>());
+		queues.put(E1Port2, new ConcurrentLinkedQueue<Byte>());
 
 		inputServers = new ArrayList<InputServer>();
-		inputServers.add(new InputServer(Url1, queues[E1Port1], this));
-		inputServers.add(new InputServer(Url2, queues[E1Port2], this));
+		inputServers.add(new InputServer(Url1, queues.get(E1Port1), this));
+		inputServers.add(new InputServer(Url2, queues.get(E1Port2), this));
 
-		outputServer = new OutputServer(new URI(Parameters.Get("OraionURI", "udp://127.0.0.1:2421")), queues, this);
+		outputServer = new OutputServer(new URI(Parameters.Get("OraionURI")), queues, this);
 		outputServer.AddPort(E1Port1);
 		outputServer.AddPort(E1Port2);
 

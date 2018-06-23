@@ -14,10 +14,11 @@ public class EndPort
 	
 	public EndPort(int E1Port, URI orionAddress) throws SocketException, UnknownHostException
 	{
-		socket = new DatagramSocket();
-		InetAddress orionInet = InetAddress.getByName( orionAddress.getHost());
-		socket = new DatagramSocket(E1Port, orionInet);
+		//InetAddress orionInet = InetAddress.getByName( orionAddress.getHost());
+		socket = new DatagramSocket(E1Port);
 		socket.setSoTimeout(500);
+		
+		Satop = new SAToP();
 	}
 	
 }

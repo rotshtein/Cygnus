@@ -178,22 +178,39 @@ public class MainScreen implements GuiInterface
 		numPort1.setValue(Integer.parseInt(Parameters.Get("E1Port1", "1")));
 		
 		pnlSetup.add(numPort1);
-		lblstEPort.setBounds(304, 45, 76, 13);
+		lblstEPort.setBounds(315, 46, 76, 13);
 		
 		pnlSetup.add(lblstEPort);
-		lblndEPort.setBounds(304, 76, 76, 13);
+		lblndEPort.setBounds(313, 77, 76, 13);
 		
 		pnlSetup.add(lblndEPort);
-		ftxtOrionAddress.setBounds(321, 10, 103, 23);
-		ftxtOrionAddress.setText(Parameters.Get("OrionAddres", "127.0.0.1"));
+		ftxtOrionAddress.setBounds(321, 8, 103, 23);
+		URI OrionURI = null;
+		try
+		{
+			OrionURI = new URI(Parameters.Get("OraionURI", "uri://127.0.0.1:2421"));
+		}
+		catch (Exception e)
+		{
+			try
+			{
+				Parameters.Set("OraionURI", "uri://127.0.0.1:2421");
+			}
+			catch (IOException e1)
+			{
+				// TODO Auto-generated catch block
+			}
+			OrionURI = new URI(Parameters.Get("OraionURI", "uri://127.0.0.1:2421"));
+		}
+		ftxtOrionAddress.setText(OrionURI.getHost());
 		pnlSetup.add(ftxtOrionAddress);
-		lblStream.setBounds(10, 46, 62, 13);
+		lblStream.setBounds(17, 46, 62, 13);
 		
 		pnlSetup.add(lblStream);
-		lblStream_1.setBounds(10, 77, 62, 13);
+		lblStream_1.setBounds(17, 77, 62, 13);
 		
 		pnlSetup.add(lblStream_1);
-		lblOrionIpAddress.setBounds(217, 15, 94, 13);
+		lblOrionIpAddress.setBounds(224, 13, 118, 13);
 		
 		pnlSetup.add(lblOrionIpAddress);
 		btnClear.setBounds(102, 516, 74, 23);
@@ -329,7 +346,7 @@ public class MainScreen implements GuiInterface
 			{
 				logger.error("Failed to save parameters", e1);
 			}
-			client.SendStartCommand(txtIn1.getText(), txtIn2.getText(), (Integer)numPort1.getValue(), (Integer)numPort1.getValue(), "udp://" + ftxtOrionAddress.getText()+":2421");
+			client.SendStartCommand(txtIn1.getText(), txtIn2.getText(), (Integer)numPort1.getValue(), (Integer)numPort2.getValue(), "udp://" + ftxtOrionAddress.getText()+":2421");
 			
 			btnStart.setEnabled(false);
 		}

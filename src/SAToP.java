@@ -20,7 +20,7 @@ public class SAToP
 	public SAToP()
 	{
 		rxSeq = NOT_INITIALIZE;
-		txSeq = new Random().nextInt();
+		txSeq = new Random().nextInt() & 0xFFFF;
 
 		rxByteCount = 0;
 		rxFrameCount = 0;
@@ -76,8 +76,10 @@ public class SAToP
 		else
 		{
 			StriptData = new byte[len - SAToP_HEADER_SIZE];
+			
 			rxByteCount += len;
 		}
+		System.arraycopy(data, SAToP_HEADER_SIZE, StriptData, 0, StriptData.length);
 		
 		int nSeq = DataStrem.getShort();
 		if (rxSeq == NOT_INITIALIZE)
