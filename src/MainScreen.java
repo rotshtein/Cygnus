@@ -122,6 +122,7 @@ public class MainScreen implements GuiInterface
 	private final JLabel lblOrionIpAddress = new JLabel("Orion IP Address");
 	private final JLabel labelOut = new JLabel("0");
 	private final JLabel lblOutpoutbytes = new JLabel("Outpout [Bytes]");
+	private URI OrionURI = null;
 
 	/**
 	 * Launch the application.
@@ -188,22 +189,21 @@ public class MainScreen implements GuiInterface
 		
 		pnlSetup.add(lblndEPort);
 		ftxtOrionAddress.setBounds(321, 8, 103, 23);
-		URI OrionURI = null;
 		try
 		{
-			OrionURI = new URI(Parameters.Get("OraionURI", "uri://127.0.0.1:2421"));
+			OrionURI = new URI(Parameters.Get("OraionURI", "udp://127.0.0.1:2421"));
 		}
 		catch (Exception e)
 		{
 			try
 			{
-				Parameters.Set("OraionURI", "uri://127.0.0.1:2421");
+				Parameters.Set("OraionURI", "udp://127.0.0.1:2421");
 			}
 			catch (IOException e1)
 			{
 				// TODO Auto-generated catch block
 			}
-			OrionURI = new URI(Parameters.Get("OraionURI", "uri://127.0.0.1:2421"));
+			OrionURI = new URI(Parameters.Get("OraionURI", "udp://127.0.0.1:2421"));
 		}
 		ftxtOrionAddress.setText(OrionURI.getHost());
 		pnlSetup.add(ftxtOrionAddress);
@@ -344,14 +344,15 @@ public class MainScreen implements GuiInterface
 				Parameters.Set("url-in-2", txtIn2.getText());
 				Parameters.Set("E1Port1", numPort1.getValue().toString());
 				Parameters.Set("E1Port2", numPort2.getValue().toString());
-				Parameters.Set("OrionAddress", ftxtOrionAddress.getText());
+				OrionURI = URI.create("udp://"+ftxtOrionAddress.getText() + ":" + OrionURI.getPort());
+				Parameters.Set("OrionURI",OrionURI.toString());
 			}
 			catch (IOException e1)
 			{
 				logger.error("Failed to save parameters", e1);
 			}
-			client.SendStartCommand(txtIn1.getText(), txtIn2.getText(), (Integer)numPort1.getValue(), (Integer)numPort2.getValue(), "udp://" + ftxtOrionAddress.getText()+":2421");
 			
+			client.SendStartCommand(txtIn1.getText(), txtIn2.getText(), (Integer)numPort1.getValue(), (Integer)numPort2.getValue(), OrionURI.toString());
 			btnStart.setEnabled(false);
 		}
 	}

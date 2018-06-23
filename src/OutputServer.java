@@ -31,7 +31,7 @@ public class OutputServer extends Thread
 	public OutputServer(URI OrionAddress, HashMap <Integer, ConcurrentLinkedQueue<Byte>> Queues, GuiInterface Gui)
 			throws SocketException, UnknownHostException
 	{
-		orionAddress = OrionAddress;
+		this.orionAddress = OrionAddress;
 		if (serverSocket == null)
 		{
 			serverAddress = InetAddress.getByName(OrionAddress.getHost());

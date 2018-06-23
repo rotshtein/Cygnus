@@ -161,11 +161,8 @@ public class ManagementClient extends WebSocketClient
 	}
 
 	public Boolean SendStartCommand(String input1_url, String input2_url, int Port1, int Port2, String OrionUrl)
-
 	{
-  
-		
-		try
+  	try
 		{
 			StartCommand sc = StartCommand.newBuilder().setInput1Url(input1_url)
 					.setInput2Url(input2_url).setE1Port1(Port1).setE1Port2(Port2).setBoxUrl(OrionUrl).build();
