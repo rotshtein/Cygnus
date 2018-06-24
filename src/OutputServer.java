@@ -142,8 +142,8 @@ public class OutputServer extends Thread
 
 				try
 				{
-					packet.setPort(1);
-					byte[] data = GetBytes(packet.getPort(), packet.getLength());
+					packet.setPort(packet.getPort());
+					byte[] data = GetBytes(packet.getPort(), packet.getLength()-SAToP.SAToP_HEADER_SIZE);
 					
 					
 					EndPort ep = EndPorts.get(packet.getPort());

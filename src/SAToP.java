@@ -6,7 +6,7 @@ public class SAToP
 {
 	final byte L_BIR = 0x04;
 	final byte R_BIR = 0x08;
-	final int SAToP_HEADER_SIZE = 4;
+	public static int SAToP_HEADER_SIZE = 4;
 	final int NOT_INITIALIZE = 0xFFFFFF;
 	
 	int rxSeq;
