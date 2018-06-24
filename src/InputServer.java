@@ -13,19 +13,20 @@ import org.apache.log4j.Logger;
 public class InputServer extends Thread
 {
 
-	static final Logger	logger		= Logger.getLogger("OutputServer");
+	static final Logger	logger		= Logger.getLogger("InputServer");
 	static int			PACKETSIZE	= 1500;
 
-	DatagramSocket				socket		= null;
-	Boolean						stopThread	= false;
-	ConcurrentLinkedQueue<Byte>	queue		= null;
-	URI							sourceUrl	= null;
-	GuiInterface gui = null;
-	long	rxByteCount		= 0;
-	long	rxFrameCount	= 0;
-	SAToP 	Satop;
+	DatagramSocket				socket			= null;
+	Boolean						stopThread		= false;
+	ConcurrentLinkedQueue<Byte>	queue			= null;
+	URI							sourceUrl		= null;
+	GuiInterface				gui				= null;
+	long						rxByteCount		= 0;
+	long						rxFrameCount	= 0;
+	SAToP						Satop;
 
-	public InputServer(URI url, ConcurrentLinkedQueue<Byte> Queue, GuiInterface Gui) throws SocketException, UnknownHostException
+	public InputServer(URI url, ConcurrentLinkedQueue<Byte> Queue, GuiInterface Gui)
+			throws SocketException, UnknownHostException
 	{
 		try
 		{
@@ -46,7 +47,7 @@ public class InputServer extends Thread
 		socket.setSoTimeout(500);
 		Satop = new SAToP();
 		queue = Queue;
-		
+
 		gui = Gui;
 		logger.info("UDP Server started listtning on port " + sourceUrl.getPort());
 	}
@@ -99,7 +100,7 @@ public class InputServer extends Thread
 				rxFrameCount++;
 				try
 				{
-					
+
 					byte[] data = packet.getData();
 					byte[] SATopData = Satop.GetData(data);
 					for (byte b : SATopData)
@@ -110,7 +111,7 @@ public class InputServer extends Thread
 				}
 				catch (IllegalStateException e)
 				{
-					logger.error("Udp mssage queue full", e);
+					logger.error("Udp message queue full", e);
 					// queue.clear();
 				}
 				catch (Exception e)

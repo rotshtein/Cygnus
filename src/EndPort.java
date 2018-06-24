@@ -7,17 +7,18 @@ import org.apache.log4j.Logger;
 
 public class EndPort
 {
-	static final Logger					logger			= Logger.getLogger("EndPort");
-	public SAToP Satop;
-	public DatagramSocket socket = null;
-	
+
+	static final Logger		logger	= Logger.getLogger("EndPort");
+	public SAToP			Satop;
+	public DatagramSocket	socket	= null;
+
 	public EndPort(int E1Port, URI orionAddress) throws SocketException, UnknownHostException
 	{
-		//InetAddress orionInet = InetAddress.getByName( orionAddress.getHost());
+		// InetAddress orionInet = InetAddress.getByName( orionAddress.getHost());
 		socket = new DatagramSocket(E1Port);
 		socket.setSoTimeout(500);
-		
+
 		Satop = new SAToP();
 	}
-	
+
 }

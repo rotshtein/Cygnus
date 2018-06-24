@@ -29,16 +29,15 @@ public class ManagementParser extends Thread implements GuiInterface
 	BlockingQueue<AbstractMap.SimpleEntry<byte[], WebSocket>>	queue			= null;
 	WebSocket													currentConn		= null;
 	Boolean														runThread;
-	HashMap <Integer, ConcurrentLinkedQueue<Byte>>				queues			= null;
+	HashMap<Integer, ConcurrentLinkedQueue<Byte>>				queues			= null;
 	List<InputServer>											inputServers	= null;
 	OutputServer												outputServer	= null;
 	int															Port1, Port2;
 
-	static long rxBytes1 = 0;
-	static long rxBytes2 = 0;
-	static long txBytes = 0;
-	
-	
+	static long	rxBytes1	= 0;
+	static long	rxBytes2	= 0;
+	static long	txBytes		= 0;
+
 	public ManagementParser(BlockingQueue<AbstractMap.SimpleEntry<byte[], WebSocket>> queue, ManagementServer server)
 			throws Exception
 	{
@@ -128,7 +127,6 @@ public class ManagementParser extends Thread implements GuiInterface
 					SendStatusMessage("Forward process started");
 					logger.info("Forward process started");
 
-					
 					SendAck(h, conn);
 					SendProcessStartMessage();
 				}
@@ -188,7 +186,7 @@ public class ManagementParser extends Thread implements GuiInterface
 		// StartForward(p.getE1Port1(), p.getE1Port2() , p.getInput1Url(),
 		// p.getInput2Url(), p.getBoxUrl())
 
-		queues = new HashMap <Integer, ConcurrentLinkedQueue<Byte>>();
+		queues = new HashMap<Integer, ConcurrentLinkedQueue<Byte>>();
 		queues.put(E1Port1, new ConcurrentLinkedQueue<Byte>());
 		queues.put(E1Port2, new ConcurrentLinkedQueue<Byte>());
 
@@ -207,9 +205,9 @@ public class ManagementParser extends Thread implements GuiInterface
 				is.start();
 			}
 		}
-		
+
 		outputServer.start();
-		
+
 		return true;
 	}
 
@@ -222,7 +220,7 @@ public class ManagementParser extends Thread implements GuiInterface
 		}
 		inputServers.clear();
 		inputServers = null;
-		
+
 		outputServer.Stop();
 		outputServer = null;
 		return true;
@@ -306,7 +304,7 @@ public class ManagementParser extends Thread implements GuiInterface
 			}
 		}
 	}
-	
+
 	private void SendStatusMessage(String message, WebSocket conn)
 	{
 		try
@@ -430,12 +428,12 @@ public class ManagementParser extends Thread implements GuiInterface
 			}
 		}
 		txBytes += txBytes;
-		
-		StatusReplay sr = StatusReplay.newBuilder().setStream1InputBytes(rxBytes1)
-				.setStream2InputBytes(rxBytes2).setOutputBytes(txBytes).build(); 
-		
+
+		StatusReplay sr = StatusReplay.newBuilder().setStream1InputBytes(rxBytes1).setStream2InputBytes(rxBytes2)
+				.setOutputBytes(txBytes).build();
+
 		Header h = Header.newBuilder().setOpcode(OPCODE.STATUS_REPLAY).setMessageData(sr.toByteString()).build();
-		
+
 		BroadcastMessage(h.toByteString());
 	}
 

@@ -40,52 +40,55 @@ import javax.swing.SpinnerNumberModel;
 
 public class MainScreen implements GuiInterface
 {
+
 	class IPAddressFormatter extends DefaultFormatter
 	{
-	   /**
+
+		/**
 		 * 
 		 */
 		private static final long serialVersionUID = 1L;
 
-	public String valueToString(Object value) throws ParseException
-	   {
-	      if (!(value instanceof byte[])) throw new ParseException("Not a byte[]", 0);
-	      byte[] a = (byte[]) value;
-	      if (a.length != 4) throw new ParseException("Length != 4", 0);
-	      StringBuilder builder = new StringBuilder();
-	      for (int i = 0; i < 4; i++)
-	      {
-	         int b = a[i];
-	         if (b < 0) b += 256;
-	         builder.append(String.valueOf(b));
-	         if (i < 3) builder.append('.');
-	      }
-	      return builder.toString();
-	   }
+		public String valueToString(Object value) throws ParseException
+		{
+			if (!(value instanceof byte[])) throw new ParseException("Not a byte[]", 0);
+			byte[] a = (byte[]) value;
+			if (a.length != 4) throw new ParseException("Length != 4", 0);
+			StringBuilder builder = new StringBuilder();
+			for (int i = 0; i < 4; i++)
+			{
+				int b = a[i];
+				if (b < 0) b += 256;
+				builder.append(String.valueOf(b));
+				if (i < 3) builder.append('.');
+			}
+			return builder.toString();
+		}
 
-	   public Object stringToValue(String text) throws ParseException
-	   {
-	      StringTokenizer tokenizer = new StringTokenizer(text, ".");
-	      byte[] a = new byte[4];
-	      for (int i = 0; i < 4; i++)
-	      {
-	         int b = 0;
-	         if (!tokenizer.hasMoreTokens()) throw new ParseException("Too few bytes", 0);
-	         try
-	         {
-	            b = Integer.parseInt(tokenizer.nextToken());
-	         }
-	         catch (NumberFormatException e)
-	         {
-	            throw new ParseException("Not an integer", 0);
-	         }
-	         if (b < 0 || b >= 256) throw new ParseException("Byte out of range", 0);
-	         a[i] = (byte) b;
-	      }
-	      if (tokenizer.hasMoreTokens()) throw new ParseException("Too many bytes", 0);
-	      return a;
-	   }
+		public Object stringToValue(String text) throws ParseException
+		{
+			StringTokenizer tokenizer = new StringTokenizer(text, ".");
+			byte[] a = new byte[4];
+			for (int i = 0; i < 4; i++)
+			{
+				int b = 0;
+				if (!tokenizer.hasMoreTokens()) throw new ParseException("Too few bytes", 0);
+				try
+				{
+					b = Integer.parseInt(tokenizer.nextToken());
+				}
+				catch (NumberFormatException e)
+				{
+					throw new ParseException("Not an integer", 0);
+				}
+				if (b < 0 || b >= 256) throw new ParseException("Byte out of range", 0);
+				a[i] = (byte) b;
+			}
+			if (tokenizer.hasMoreTokens()) throw new ParseException("Too many bytes", 0);
+			return a;
+		}
 	}
+
 	static final Logger		logger					= Logger.getLogger("MainScreen");
 	private JFrame			frmCygnusVersion;
 	JFormattedTextField		txtIn1;
@@ -110,19 +113,19 @@ public class MainScreen implements GuiInterface
 	private final JPanel	pnlSetup				= new JPanel();
 	private final JLabel	lblCic2InpoutBytes		= new JLabel("2nd Inpout [Bytes]");
 	private final JLabel	lblIn2Counter			= new JLabel("0");
-	//private final String	Version					= "1.0";
-	private final JSpinner numPort2 = new JSpinner();
-	private final JSpinner numPort1 = new JSpinner();
-	private final JLabel lblstEPort = new JLabel("1st E1 Port");
-	private final JLabel lblndEPort = new JLabel("2nd E1 Port");
-	private final JScrollPane scrollPane = new JScrollPane();
-	private final JFormattedTextField ftxtOrionAddress = new JFormattedTextField(new IPAddressFormatter());
-	private final JLabel lblStream = new JLabel("Stream 1");
-	private final JLabel lblStream_1 = new JLabel("Stream 2");
-	private final JLabel lblOrionIpAddress = new JLabel("Orion IP Address");
-	private final JLabel labelOut = new JLabel("0");
-	private final JLabel lblOutpoutbytes = new JLabel("Outpout [Bytes]");
-	private URI OrionURI = null;
+	// private final String Version = "1.0";
+	private final JSpinner				numPort2			= new JSpinner();
+	private final JSpinner				numPort1			= new JSpinner();
+	private final JLabel				lblstEPort			= new JLabel("1st E1 Port");
+	private final JLabel				lblndEPort			= new JLabel("2nd E1 Port");
+	private final JScrollPane			scrollPane			= new JScrollPane();
+	private final JFormattedTextField	ftxtOrionAddress	= new JFormattedTextField(new IPAddressFormatter());
+	private final JLabel				lblStream			= new JLabel("Stream 1");
+	private final JLabel				lblStream_1			= new JLabel("Stream 2");
+	private final JLabel				lblOrionIpAddress	= new JLabel("Orion IP Address");
+	private final JLabel				labelOut			= new JLabel("0");
+	private final JLabel				lblOutpoutbytes		= new JLabel("Outpout [Bytes]");
+	private URI							OrionURI			= null;
 
 	/**
 	 * Launch the application.
@@ -173,20 +176,19 @@ public class MainScreen implements GuiInterface
 		numPort2.setModel(new SpinnerNumberModel(2, 1, 32, 1));
 		numPort2.setBounds(379, 73, 45, 20);
 		numPort2.setValue(Integer.parseInt(Parameters.Get("E1Port2", "2")));
-		
-		
+
 		pnlSetup.add(numPort2);
 		numPort1.setModel(new SpinnerNumberModel(1, 1, 32, 1));
 		numPort1.setToolTipText("Orion Port");
 		numPort1.setBounds(379, 42, 45, 20);
 		numPort1.setValue(Integer.parseInt(Parameters.Get("E1Port1", "1")));
-		
+
 		pnlSetup.add(numPort1);
 		lblstEPort.setBounds(315, 46, 76, 13);
-		
+
 		pnlSetup.add(lblstEPort);
 		lblndEPort.setBounds(313, 77, 76, 13);
-		
+
 		pnlSetup.add(lblndEPort);
 		ftxtOrionAddress.setBounds(321, 8, 103, 23);
 		try
@@ -208,13 +210,13 @@ public class MainScreen implements GuiInterface
 		ftxtOrionAddress.setText(OrionURI.getHost());
 		pnlSetup.add(ftxtOrionAddress);
 		lblStream.setBounds(17, 46, 62, 13);
-		
+
 		pnlSetup.add(lblStream);
 		lblStream_1.setBounds(17, 77, 62, 13);
-		
+
 		pnlSetup.add(lblStream_1);
 		lblOrionIpAddress.setBounds(224, 13, 118, 13);
-		
+
 		pnlSetup.add(lblOrionIpAddress);
 		btnClear.setBounds(102, 516, 74, 23);
 		btnClear.addActionListener(new ActionListener()
@@ -226,7 +228,7 @@ public class MainScreen implements GuiInterface
 			}
 		});
 		scrollPane.setBounds(10, 158, 441, 264);
-		
+
 		frmCygnusVersion.getContentPane().add(scrollPane);
 		scrollPane.setViewportView(textArea);
 		textArea.setFocusable(false);
@@ -270,23 +272,23 @@ public class MainScreen implements GuiInterface
 		labelOut.setHorizontalAlignment(SwingConstants.CENTER);
 		labelOut.setBorder(new LineBorder(new Color(0, 0, 0)));
 		labelOut.setBounds(327, 27, 104, 20);
-		
+
 		pnlCounters.add(labelOut);
 		lblOutpoutbytes.setBounds(232, 27, 99, 20);
-		
+
 		pnlCounters.add(lblOutpoutbytes);
 		btnStop.setBounds(290, 125, 57, 23);
 		frmCygnusVersion.getContentPane().add(btnStop);
 		btnStop.setToolTipText("Stop de-encapsulation process.");
 		btnStop.setFont(new Font("Tahoma", Font.PLAIN, 10));
-		
-				btnStart = new JButton("Start");
-				btnStart.setBounds(118, 125, 57, 23);
-				frmCygnusVersion.getContentPane().add(btnStart);
-				btnStart.setToolTipText("Start de-encapsulation process.");
-				btnStart.setFont(new Font("Tahoma", Font.PLAIN, 10));
-				btnStart.addActionListener(new StartAction());
-		
+
+		btnStart = new JButton("Start");
+		btnStart.setBounds(118, 125, 57, 23);
+		frmCygnusVersion.getContentPane().add(btnStart);
+		btnStart.setToolTipText("Start de-encapsulation process.");
+		btnStart.setFont(new Font("Tahoma", Font.PLAIN, 10));
+		btnStart.addActionListener(new StartAction());
+
 		btnStop.addActionListener(new ActionListener()
 		{
 
@@ -344,15 +346,16 @@ public class MainScreen implements GuiInterface
 				Parameters.Set("url-in-2", txtIn2.getText());
 				Parameters.Set("E1Port1", numPort1.getValue().toString());
 				Parameters.Set("E1Port2", numPort2.getValue().toString());
-				OrionURI = URI.create("udp://"+ftxtOrionAddress.getText() + ":" + OrionURI.getPort());
-				Parameters.Set("OrionURI",OrionURI.toString());
+				OrionURI = URI.create("udp://" + ftxtOrionAddress.getText() + ":" + OrionURI.getPort());
+				Parameters.Set("OrionURI", OrionURI.toString());
 			}
 			catch (IOException e1)
 			{
 				logger.error("Failed to save parameters", e1);
 			}
-			
-			client.SendStartCommand(txtIn1.getText(), txtIn2.getText(), (Integer)numPort1.getValue(), (Integer)numPort2.getValue(), OrionURI.toString());
+
+			client.SendStartCommand(txtIn1.getText(), txtIn2.getText(), (Integer) numPort1.getValue(),
+					(Integer) numPort2.getValue(), OrionURI.toString());
 			btnStart.setEnabled(false);
 		}
 	}
@@ -406,7 +409,8 @@ public class MainScreen implements GuiInterface
 	private void initialize()
 	{
 		frmCygnusVersion = new JFrame();
-		frmCygnusVersion.setIconImage(Toolkit.getDefaultToolkit().getImage(MainScreen.class.getResource("/forward.jpg")));
+		frmCygnusVersion
+				.setIconImage(Toolkit.getDefaultToolkit().getImage(MainScreen.class.getResource("/forward.jpg")));
 		frmCygnusVersion.addWindowListener(new WindowAdapter()
 		{
 
@@ -445,8 +449,6 @@ public class MainScreen implements GuiInterface
 		// create the status bar panel and shove it down the bottom of the frame
 
 	}
-
-	
 
 	private void Stop()
 	{
@@ -525,8 +527,8 @@ public class MainScreen implements GuiInterface
 		// Now edit your gui objects
 		txtIn1.setBackground(Color.WHITE);
 		txtIn2.setBackground(Color.WHITE);
-		//txtOut1.setBackground(Color.WHITE);
-		//txtOut2.setBackground(Color.WHITE);
+		// txtOut1.setBackground(Color.WHITE);
+		// txtOut2.setBackground(Color.WHITE);
 	}
 
 	public JTextArea getTextArea()
@@ -553,15 +555,15 @@ public class MainScreen implements GuiInterface
 				return;
 			}
 			// Now edit your gui objects
-//			txtIn1.setBackground(Color.ORANGE);
-	//		txtIn2.setBackground(Color.ORANGE);
+			// txtIn1.setBackground(Color.ORANGE);
+			// txtIn2.setBackground(Color.ORANGE);
 		}
 	}
 
 	@Override
 	public void UpdateStatistics(long rx1Bytes, long rx2Bytes, long txBytes)
 	{
-	
+
 		if (!SwingUtilities.isEventDispatchThread())
 		{
 			SwingUtilities.invokeLater(new Runnable()

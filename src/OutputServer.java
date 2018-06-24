@@ -15,20 +15,20 @@ import org.apache.log4j.Logger;
 public class OutputServer extends Thread
 {
 
-	static final Logger					logger			= Logger.getLogger("OutputServer");
-	static int							PACKETSIZE		= 1500;
-	DatagramSocket						serverSocket	= null;
-	HashMap<Integer, EndPort>			EndPorts		= new HashMap<Integer, EndPort>();
-	HashMap <Integer, ConcurrentLinkedQueue<Byte>>		queues			= null;
-	ArrayList<Integer>					Ports = null;					
-	Boolean								stopThread		= false;
-	URI									orionAddress	= null;
-	InetAddress							serverAddress	= null;
-	GuiInterface gui = null;
-	long	txByteCount		= 0;
-	long	txFrameCount	= 0;
+	static final Logger								logger			= Logger.getLogger("OutputServer");
+	static int										PACKETSIZE		= 1500;
+	DatagramSocket									serverSocket	= null;
+	HashMap<Integer, EndPort>						EndPorts		= new HashMap<Integer, EndPort>();
+	HashMap<Integer, ConcurrentLinkedQueue<Byte>>	queues			= null;
+	ArrayList<Integer>								Ports			= null;
+	Boolean											stopThread		= false;
+	URI												orionAddress	= null;
+	InetAddress										serverAddress	= null;
+	GuiInterface									gui				= null;
+	long											txByteCount		= 0;
+	long											txFrameCount	= 0;
 
-	public OutputServer(URI OrionAddress, HashMap <Integer, ConcurrentLinkedQueue<Byte>> Queues, GuiInterface Gui)
+	public OutputServer(URI OrionAddress, HashMap<Integer, ConcurrentLinkedQueue<Byte>> Queues, GuiInterface Gui)
 			throws SocketException, UnknownHostException
 	{
 		this.orionAddress = OrionAddress;
@@ -53,7 +53,7 @@ public class OutputServer extends Thread
 		{
 
 		}
-		
+
 		EndPort ep = new EndPort(E1Port, orionAddress);
 		EndPorts.put(E1Port, ep);
 		Ports.add(E1Port);
@@ -100,7 +100,7 @@ public class OutputServer extends Thread
 				queue = null;
 			}
 		}
-		
+
 		EndPort ep = EndPorts.get(E1Port);
 
 		if (ep.socket != null)
@@ -143,15 +143,15 @@ public class OutputServer extends Thread
 				try
 				{
 					packet.setPort(packet.getPort());
-					byte[] data = GetBytes(packet.getPort(), packet.getLength()-SAToP.SAToP_HEADER_SIZE);
-					
-					
+					byte[] data = GetBytes(packet.getPort(), packet.getLength() - SAToP.SAToP_HEADER_SIZE);
+
 					EndPort ep = EndPorts.get(packet.getPort());
 					if ((ep != null) & (ep.socket != null))
 					{
 						txFrameCount++;
-						byte [] SAToPPacket = ep.Satop.GetBuffer(data);
-						DatagramPacket SendPacket = new DatagramPacket(SAToPPacket, SAToPPacket.length, serverAddress, orionAddress.getPort());
+						byte[] SAToPPacket = ep.Satop.GetBuffer(data);
+						DatagramPacket SendPacket = new DatagramPacket(SAToPPacket, SAToPPacket.length, serverAddress,
+								orionAddress.getPort());
 						ep.socket.send(SendPacket);
 						txByteCount += SAToPPacket.length;
 					}
@@ -171,8 +171,8 @@ public class OutputServer extends Thread
 				}
 				catch (Exception e)
 				{
-					logger.error("Can't collect receive statistics",e );
-					gui.UpdateStatistics(0,0,txByteCount);
+					logger.error("Can't collect receive statistics", e);
+					gui.UpdateStatistics(0, 0, txByteCount);
 				}
 			}
 			catch (Exception e)
@@ -195,18 +195,19 @@ public class OutputServer extends Thread
 
 	private byte[] GetBytes(int Port, int Length)
 	{
-		//TODO Add SAToP header
+		// TODO Add SAToP header
 		byte[] data = new byte[Length];
 		ConcurrentLinkedQueue<Byte> queue = queues.get(Port);
 		if (queue.size() >= Length)
 		{
-			
+
 			if (queue.size() >= 100 * Length)
 			{
 				for (int i = 0; i < Length; i++)
 				{
 					queue.poll();
 				}
+				logger.warn("Port " + Port + " :Queue too long, " + Length + " bytes extractued for the queue");
 			}
 
 			for (int i = 0; i < Length; i++)
@@ -219,8 +220,9 @@ public class OutputServer extends Thread
 		{
 			for (int i = 0; i < Length; i++)
 			{
-				data[i] = Byte.MAX_VALUE;
+				data[i] = (byte)0xFF;
 			}
+			logger.warn("Port " + Port + " :Queue empty. Sending " + Length + " idele bytes");
 		}
 		return data;
 	}

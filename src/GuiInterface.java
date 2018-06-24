@@ -13,7 +13,7 @@ public interface GuiInterface
 	void OperationCompleted();
 
 	void OperationStarted();
-	
+
 	void UpdateStatistics(long rx1Bytes, long rx2Bytes, long txBytes);
 
 	// void OperationInSync(Channel ch);
