@@ -9,8 +9,8 @@ public class EndPort
 {
 
 	static final Logger		logger	= Logger.getLogger("EndPort");
-	public SAToP			Satop;
-	public DatagramSocket	socket	= null;
+	SAToP			Satop;
+	DatagramSocket	socket	= null;
 
 	public EndPort(int E1Port, URI orionAddress) throws SocketException, UnknownHostException
 	{
@@ -20,5 +20,14 @@ public class EndPort
 
 		Satop = new SAToP();
 	}
-
+	
+	public SAToP getSAToP()
+	{
+		return Satop;
+	}
+	
+	public DatagramSocket getSocket()
+	{
+		return socket;
+	}
 }

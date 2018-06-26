@@ -94,6 +94,11 @@ message StatusReplay
 	bool error = 9;
 	string error_mMessage = 10;
 	int32 error_number = 11;
+	bool OrionConnectionStatus = 12;
+	bool E1Port1ConnectionStatus = 13;
+	bool E1Port2ConnectionStatus = 14;
+	int32 Port1QueueSize = 15;
+	int32 Port2QueueSize = 16;
 }
 
 /*****************************************************************************************************************************/

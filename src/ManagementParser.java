@@ -33,10 +33,16 @@ public class ManagementParser extends Thread implements GuiInterface
 	List<InputServer>											inputServers	= null;
 	OutputServer												outputServer	= null;
 	int															Port1, Port2;
-
+	boolean orionConnectionStatus = false;
+	boolean e1Port1ConnectionStatus = false;
+	boolean e1Port2ConnectionStatus = false;
+	int port1QueueSize = 0;
+	int port2QueueSize = 0;
+	
 	static long	rxBytes1	= 0;
 	static long	rxBytes2	= 0;
 	static long	txBytes		= 0;
+	
 
 	public ManagementParser(BlockingQueue<AbstractMap.SimpleEntry<byte[], WebSocket>> queue, ManagementServer server)
 			throws Exception
@@ -149,21 +155,14 @@ public class ManagementParser extends Thread implements GuiInterface
 				break;
 
 			case STATUS_REQUEST:
-				StatusReplay sr = null;
-
-			// TODO if running
-			{
-				sr = StatusReplay.newBuilder().setError(false).setErrorMMessage("").setWarning(false)
-						.setWarningMessage("").setStatus(STATUS.RUN).build();
-			}
-			// TODO else when not running
-			{
-				sr = StatusReplay.newBuilder().setStatus(STATUS.STOP).build();
-			}
-				Header hh = Header.newBuilder().setSequence(h.getSequence()).setMessageData(sr.getErrorMMessageBytes())
-						.build();
-
-				SendMessage(hh.toByteString(), conn);
+				if (outputServer != null)
+				{
+					SendStatusReplay(STATUS.RUN);
+				}
+				else
+				{
+					 SendStatusReplay(STATUS.RUN);;
+				}
 				break;
 
 			case STATUS_MESSAGE:
@@ -191,8 +190,8 @@ public class ManagementParser extends Thread implements GuiInterface
 		queues.put(E1Port2, new ConcurrentLinkedQueue<Byte>());
 
 		inputServers = new ArrayList<InputServer>();
-		inputServers.add(new InputServer(Url1, queues.get(E1Port1), this));
-		inputServers.add(new InputServer(Url2, queues.get(E1Port2), this));
+		inputServers.add(new InputServer(E1Port1, Url1, queues.get(E1Port1), this));
+		inputServers.add(new InputServer(E1Port2, Url2, queues.get(E1Port2), this));
 
 		outputServer = new OutputServer(new URI(Parameters.Get("OraionURI")), queues, this);
 		outputServer.AddPort(E1Port1);
@@ -271,27 +270,12 @@ public class ManagementParser extends Thread implements GuiInterface
 
 	private void SendProcessStopMessage()
 	{
-		StatusReplay r = StatusReplay.newBuilder().setStatus(STATUS.STOP).build();
-		Header h = Header.newBuilder().setSequence(0).setOpcode(OPCODE.STATUS_MESSAGE).setMessageData(r.toByteString())
-				.build();
-
-		BroadcastMessage(h.toByteString());
+		SendStatusReplay(STATUS.STOP);
 	}
 
 	private void SendProcessStartMessage()
 	{
-		try
-		{
-			StatusReplay r = StatusReplay.newBuilder().setStatus(STATUS.RUN).build();
-			Header h = Header.newBuilder().setSequence(0).setOpcode(OPCODE.STATUS_MESSAGE)
-					.setMessageData(r.toByteString()).build();
-
-			BroadcastMessage(h.toByteString());
-		}
-		catch (Exception e)
-		{
-			logger.error("Failed to send StatusMessage when process starts", e);
-		}
+		SendStatusReplay(STATUS.RUN);
 	}
 
 	private void SendStatusMessage(String message)
@@ -364,29 +348,12 @@ public class ManagementParser extends Thread implements GuiInterface
 	@Override
 	public void OperationCompleted()
 	{
-		try
-		{
-			StatusReplay s = StatusReplay.newBuilder().setStatus(STATUS.STOP)
-					.setStream1InputBytes(inputServers.get(0).getRxByteCount())
-					.setStream2InputBytes(inputServers.get(1).getRxByteCount()).build();
-			Header h = Header.newBuilder().setSequence(0).setOpcode(OPCODE.STATUS_REPLAY)
-					.setMessageData(s.toByteString()).build();
-
-			BroadcastMessage(h.toByteString());
-		}
-		catch (Exception e)
-		{
-			logger.error("Failed to send StatusReplay on complition to a connection", e);
-		}
+		SendStatusReplay(STATUS.STOP);
 	}
 
 	public void OperationStarted()
 	{
-		StatusReplay s = StatusReplay.newBuilder().setStatus(STATUS.RUN).build();
-		Header h = Header.newBuilder().setSequence(0).setOpcode(OPCODE.STATUS_REPLAY).setMessageData(s.toByteString())
-				.build();
-
-		BroadcastMessage(h.toByteString());
+		SendStatusReplay(STATUS.RUN);
 	}
 
 	@Override
@@ -429,12 +396,72 @@ public class ManagementParser extends Thread implements GuiInterface
 		}
 		txBytes += txBytes;
 
-		StatusReplay sr = StatusReplay.newBuilder().setStream1InputBytes(rxBytes1).setStream2InputBytes(rxBytes2)
+	}
+	
+	private void SendStatusReplay(STATUS OperationStatus)
+	{
+		SendStatusReplay(OperationStatus,0,null,null);
+	}
+
+	@SuppressWarnings("unused")
+	private void SendStatusReplay(STATUS OperationStatus, int ErrorNumber, String ErrorMessage)
+	{
+		SendStatusReplay(OperationStatus,ErrorNumber,ErrorMessage,null);
+	}
+	
+	@SuppressWarnings("unused")
+	private void SendStatusReplay(STATUS OperationStatus, String WarningMessage)
+	{
+		SendStatusReplay(OperationStatus,0,null,WarningMessage);
+	}
+	
+	private void SendStatusReplay(STATUS OperationStatus, int ErrorNumber, String ErrorMessage, String WarningMessage)
+	{
+		StatusReplay sr = StatusReplay.newBuilder()
+				.setStatus(OperationStatus)
+				.setStream1InputBytes(rxBytes1).setStream2InputBytes(rxBytes2)
+				.setE1Port1ConnectionStatus(outputServer.EndPorts.get(Port1).Satop.isConnectionStatus())
+				.setE1Port2ConnectionStatus(outputServer.EndPorts.get(Port1).Satop.isConnectionStatus())
+				.setOrionConnectionStatus(orionConnectionStatus)
+				.setPort1QueueSize(inputServers.get(0).getQSize()).setPort2QueueSize(inputServers.get(1).getQSize())
+				.setError(ErrorNumber != 0).setErrorMMessage(ErrorMessage == null ? "" : ErrorMessage).setErrorNumber(ErrorNumber)
+				.setWarning(WarningMessage != null).setErrorMMessage(WarningMessage == null ? "" : WarningMessage)
 				.setOutputBytes(txBytes).build();
 
 		Header h = Header.newBuilder().setOpcode(OPCODE.STATUS_REPLAY).setMessageData(sr.toByteString()).build();
 
 		BroadcastMessage(h.toByteString());
+	}
+
+	@Override
+	public void OrionConnectionStatus(boolean status)
+	{
+		orionConnectionStatus = status;
+	}
+
+	@Override
+	public void E1Port1ConnectionStatus(boolean status)
+	{
+		e1Port1ConnectionStatus = status;
+	}
+
+	@Override
+	public void E1Port2ConnectionStatus(boolean status)
+	{
+		e1Port2ConnectionStatus = status;
+	}
+
+	@Override
+	public void Port1QueueSize(int Qsize)
+	{
+		port1QueueSize = Qsize;
+		
+	}
+
+	@Override
+	public void Port2QueueSize(int Qsize)
+	{
+		port2QueueSize = Qsize;
 	}
 
 }

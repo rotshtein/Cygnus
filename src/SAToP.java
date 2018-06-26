@@ -17,7 +17,8 @@ public class SAToP
 	public long	rxFrameLostCount;
 	public long	txByteCount;
 	public long	txFrameCount;
-
+	private boolean connectionStatus = false;
+	
 	public SAToP()
 	{
 		rxSeq = NOT_INITIALIZE;
@@ -63,10 +64,12 @@ public class SAToP
 		byte flags = DataStrem.get();
 		if ((flags & L_BIR) != 0)
 		{
+			setConnectionStatus(false);
 			StriptData = new byte[0];
 			return StriptData;
 		}
 
+		setConnectionStatus(true);
 		byte len = (byte) (DataStrem.get() & 0x3f); //
 		if (len == 0)
 		{
@@ -130,5 +133,15 @@ public class SAToP
 	public long getTxByteCount()
 	{
 		return txByteCount;
+	}
+	
+	boolean isConnectionStatus()
+	{
+		return connectionStatus;
+	}
+
+	void setConnectionStatus(boolean connectionStatus)
+	{
+		this.connectionStatus = connectionStatus;
 	}
 }

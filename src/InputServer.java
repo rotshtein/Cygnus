@@ -24,10 +24,12 @@ public class InputServer extends Thread
 	long						rxByteCount		= 0;
 	long						rxFrameCount	= 0;
 	SAToP						Satop;
+	int e1PortNumber = 0;
 
-	public InputServer(URI url, ConcurrentLinkedQueue<Byte> Queue, GuiInterface Gui)
+	public InputServer(int E1PortNumber, URI url, ConcurrentLinkedQueue<Byte> Queue, GuiInterface Gui)
 			throws SocketException, UnknownHostException
 	{
+		e1PortNumber = E1PortNumber;
 		try
 		{
 			if (socket != null)
@@ -127,6 +129,11 @@ public class InputServer extends Thread
 		logger.debug("UdpServer thread exit");
 	}
 
+	public int getQSize()
+	{
+		return queue.size();
+	}
+	
 	public long getRxByteCount()
 	{
 		return rxByteCount;

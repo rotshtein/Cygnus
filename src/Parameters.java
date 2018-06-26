@@ -59,15 +59,8 @@ public final class Parameters
 
 		if (value == null)
 		{
-			try
-			{
-				Set(name, defaultValue);
+				WriteParameter(name, defaultValue);
 				value = defaultValue;
-			}
-			catch (IOException e)
-			{
-				logger.error("Error setting property", e);
-			}
 		}
 		return value;
 	}
@@ -79,10 +72,11 @@ public final class Parameters
 			Init();
 		}
 
-		props.setProperty(name, Value);
-		FileWriter writer = new FileWriter(configFile);
-		props.store(writer, "mediation settings");
-		writer.close();
+		String currentValue = Get(name);
+		if (currentValue != Value)
+		{
+			return WriteParameter(name, Value);
+		}
 		return true;
 	}
 
@@ -94,5 +88,21 @@ public final class Parameters
 		}
 		return configFile.getAbsolutePath();
 	}
-
+	
+	private static boolean WriteParameter(String name, String Value)
+	{
+		props.setProperty(name, Value);
+		try
+		{
+			FileWriter writer = new FileWriter(configFile);
+			props.store(writer, "Cygnus settings");
+			writer.close();
+		}
+		catch (IOException e)
+		{
+			logger.error("Failed to write parameter to the file",e);
+			return false;
+		}
+		return true;
+	}
 }

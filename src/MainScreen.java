@@ -582,4 +582,69 @@ public class MainScreen implements GuiInterface
 		lblIn2Counter.setText(Long.toString(rx2Bytes));
 		labelOut.setText(Long.toString(txBytes));
 	}
+
+	@Override
+	public void OrionConnectionStatus(boolean status)
+	{
+		ChangeLabelBackground(lblIn1Counter, status);
+	}
+
+	@Override
+	public void E1Port1ConnectionStatus(boolean status)
+	{
+		ChangeLabelBackground(lblIn2Counter, status);
+		
+	}
+
+	@Override
+	public void E1Port2ConnectionStatus(boolean status)
+	{
+		ChangeLabelBackground(lblOutpoutbytes, status);
+	}
+
+	@Override
+	public void Port1QueueSize(int Qsize)
+	{
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public void Port2QueueSize(int Qsize)
+	{
+		// TODO Auto-generated method stub
+		
+	}
+	
+	private void ChangeLabelBackground(JLabel control, boolean status)
+	{
+		if (!SwingUtilities.isEventDispatchThread())
+		{
+			SwingUtilities.invokeLater(new Runnable()
+			{
+
+				@Override
+				public void run()
+				{
+					ChangeLabelBackground(control, status);
+				}
+			});
+			return;
+		}
+		
+		if (status) 
+		{
+			if (control.getBackground() != Color.GREEN)
+			{
+				control.setBackground(Color.GREEN);
+			}
+		}
+		else
+		{
+			if (control.getBackground() != Color.RED)
+			{
+				control.setBackground(Color.RED);
+			}
+		}
+	}
 }

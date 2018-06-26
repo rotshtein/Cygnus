@@ -16,7 +16,9 @@ public interface GuiInterface
 
 	void UpdateStatistics(long rx1Bytes, long rx2Bytes, long txBytes);
 
-	// void OperationInSync(Channel ch);
-
-	// void OperationOutOfSync(Channel ch);
+	void OrionConnectionStatus(boolean status);
+	void E1Port1ConnectionStatus(boolean status);
+	void E1Port2ConnectionStatus(boolean status);
+	void Port1QueueSize(int Qsize);
+	void Port2QueueSize(int Qsize);
 }
